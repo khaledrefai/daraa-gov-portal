@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>خدمة المواطن - محافظة درعا</title>
+    <link rel="stylesheet" href="assets/css/styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="app-header">
+        <div class="logo-wrap">
+          <img src="assets/images/shahin-logo.svg" alt="شعار الشاهين" class="logo" />
+          <div class="brand-text">
+            <span class="gov-name">محافظة درعا</span>
+            <h1 class="service-name">منصة خدمة المواطن</h1>
+          </div>
+        </div>
+        <button class="user-chip" id="authTrigger" aria-haspopup="true" aria-expanded="false">
+          <span id="authUserLabel">تسجيل الدخول</span>
+        </button>
+      </header>
+
+      <main class="app-content">
+        <section class="hero-card">
+          <h2>خدمات رقمية من أجل مواطن أكثر تمكينًا</h2>
+          <p>
+            نوفر لك باقة متكاملة من الخدمات الإلكترونية التابعة لمحافظة درعا، مع متابعة
+            آنية للطلبات والشكاوى والمخالفات.
+          </p>
+        </section>
+
+        <nav class="quick-nav" aria-label="أقسام المنصة">
+          <button class="quick-nav__item is-active" data-target="servicesSection">الخدمات الإلكترونية</button>
+          <button class="quick-nav__item" data-target="casesSection">الشكاوى والطلبات</button>
+          <button class="quick-nav__item" data-target="violationsSection">المخالفات</button>
+        </nav>
+
+        <section id="servicesSection" class="view is-active" aria-labelledby="servicesTitle">
+          <h2 id="servicesTitle" class="section-title">تصنيفات الخدمات</h2>
+          <div id="categoriesContainer" class="categories"></div>
+          <div id="servicesContainer" class="services"></div>
+        </section>
+
+        <section id="casesSection" class="view" aria-labelledby="casesTitle">
+          <h2 id="casesTitle" class="section-title">إدارة الشكاوى والطلبات</h2>
+          <div class="cases-grid">
+            <article class="card" id="complaintsCard">
+              <header>
+                <h3>خدمة الشكاوى</h3>
+                <p>قدم شكواك وتابع حالتها لحظة بلحظة.</p>
+              </header>
+              <form id="complaintForm" class="case-form">
+                <label>
+                  <span>موضوع الشكوى</span>
+                  <input type="text" name="subject" required placeholder="اختيار عنوان واضح" />
+                </label>
+                <label>
+                  <span>وصف مفصل</span>
+                  <textarea name="description" required rows="3" placeholder="اشرح المشكلة بالتفصيل"></textarea>
+                </label>
+                <button type="submit" class="primary-btn">إرسال الشكوى</button>
+              </form>
+              <div class="list" id="complaintsList" aria-live="polite"></div>
+            </article>
+
+            <article class="card" id="requestsCard">
+              <header>
+                <h3>خدمة الطلبات</h3>
+                <p>أرسل طلبك للخدمات العامة وتابع مراحل الإنجاز.</p>
+              </header>
+              <form id="requestForm" class="case-form">
+                <label>
+                  <span>نوع الطلب</span>
+                  <input type="text" name="type" required placeholder="مثال: تصريح بناء" />
+                </label>
+                <label>
+                  <span>تفاصيل</span>
+                  <textarea name="details" required rows="3" placeholder="أدخل تفاصيل الطلب"></textarea>
+                </label>
+                <button type="submit" class="primary-btn">إرسال الطلب</button>
+              </form>
+              <div class="list" id="requestsList" aria-live="polite"></div>
+            </article>
+          </div>
+        </section>
+
+        <section id="violationsSection" class="view" aria-labelledby="violationsTitle">
+          <h2 id="violationsTitle" class="section-title">مخالفاتي</h2>
+          <p class="section-hint">استعرض مخالفاتك المستحقة واختر ما ترغب بتسديده.</p>
+          <div id="violationsList" class="list"></div>
+        </section>
+      </main>
+
+      <footer class="app-footer">
+        <small>© محافظة درعا - دائرة التحول الرقمي</small>
+        <small>جميع الحقوق محفوظة 2025</small>
+      </footer>
+    </div>
+
+    <div class="bottom-sheet" id="serviceSheet" aria-hidden="true">
+      <div class="bottom-sheet__content" role="dialog" aria-modal="true" aria-labelledby="serviceTitle"></div>
+    </div>
+
+    <div class="bottom-sheet" id="authSheet" aria-hidden="true">
+      <div class="bottom-sheet__content" role="dialog" aria-modal="true" aria-labelledby="authTitle"></div>
+    </div>
+
+    <script src="assets/js/mockApi.js" defer></script>
+    <script src="assets/js/app.js" defer></script>
+  </body>
+</html>
