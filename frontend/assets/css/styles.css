@@ -22,10 +22,6 @@ body {
   font-family: 'Cairo', 'Tahoma', 'Segoe UI', sans-serif;
 }
 
-body.modal-open {
-  overflow: hidden;
-}
-
 .app-shell {
   max-width: 480px;
   margin: 0 auto;
@@ -122,7 +118,7 @@ body.modal-open {
   line-height: 1.7;
 }
 
- .quick-nav {
+.quick-nav {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 0.75rem;

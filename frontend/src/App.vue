@@ -14,229 +14,151 @@
     </header>
 
     <main class="app-content">
-      <section class="hero-grid">
-        <article class="hero-card">
-          <h2>خدمات رقمية من أجل مواطن أكثر تمكينًا</h2>
-          <p>
-            نوفر لك باقة متكاملة من الخدمات الإلكترونية التابعة لمحافظة درعا، مع متابعة آنية للطلبات والشكاوى والمخالفات.
-          </p>
-          <button class="primary-btn hero-cta" type="button" @click="handleAuthTrigger">
-            ابدأ بإدارة خدماتك
-          </button>
-        </article>
-        <article class="insight-card" aria-live="polite">
-          <h3>مؤشرات فورية</h3>
-          <ul class="insight-list">
-            <li v-for="insight in portalInsights" :key="insight.label">
-              <span class="insight-value">{{ insight.value }}</span>
-              <span class="insight-label">{{ insight.label }}</span>
-            </li>
-          </ul>
-          <p class="insight-note">تتحدث الأرقام بحسب بيانات حسابك الحالية.</p>
-        </article>
+      <section class="hero-card">
+        <h2>خدمات رقمية من أجل مواطن أكثر تمكينًا</h2>
+        <p>
+          نوفر لك باقة متكاملة من الخدمات الإلكترونية التابعة لمحافظة درعا، مع متابعة آنية للطلبات والشكاوى والمخالفات.
+        </p>
       </section>
 
-      <div class="content-grid">
-        <aside class="sidebar" aria-label="التنقل بين أقسام المنصة">
-          <div class="sidebar__intro">
-            <h2 class="sidebar__title">مسارات المنصة</h2>
-            <p class="sidebar__subtitle">اختر القسم الذي ترغب بإدارته الآن</p>
-          </div>
-          <nav class="quick-nav" aria-label="أقسام المنصة">
+      <nav class="quick-nav" aria-label="أقسام المنصة">
+        <button
+          v-for="view in views"
+          :key="view.id"
+          class="quick-nav__item"
+          :class="{ 'is-active': activeView === view.id }"
+          type="button"
+          @click="activeView = view.id"
+        >
+          {{ view.label }}
+        </button>
+      </nav>
+
+      <section v-show="activeView === 'servicesSection'" id="servicesSection" class="view" aria-labelledby="servicesTitle">
+        <h2 id="servicesTitle" class="section-title">تصنيفات الخدمات</h2>
+        <div class="categories">
+          <template v-if="categories.length">
             <button
-              v-for="view in views"
-              :key="view.id"
-              class="quick-nav__item"
-              :class="{ 'is-active': activeView === view.id }"
+              v-for="category in categories"
+              :key="category"
+              class="category-pill"
+              :class="{ 'is-active': category === selectedCategory }"
               type="button"
-              @click="activeView = view.id"
+              @click="selectCategory(category)"
             >
-              {{ view.label }}
+              {{ category }}
             </button>
-          </nav>
-          <div class="sidebar__card">
-            <h3>قنوات الدعم</h3>
-            <ul class="support-list">
-              <li v-for="channel in supportChannels" :key="channel.label">
-                <span class="support-list__label">{{ channel.label }}</span>
-                <span class="support-list__value">{{ channel.value }}</span>
-              </li>
-            </ul>
-          </div>
-        </aside>
-
-        <section class="view-panel">
-          <section
-            v-show="activeView === 'servicesSection'"
-            id="servicesSection"
-            class="view-section"
-            aria-labelledby="servicesTitle"
-          >
-            <header class="view-section__header">
-              <h2 id="servicesTitle" class="section-title">تصنيفات الخدمات</h2>
-              <p class="section-hint">تصفح الخدمات حسب الجهة المقدمة وابدأ الطلب بخطوات بسيطة.</p>
-            </header>
-            <div class="categories">
-              <template v-if="categories.length">
-                <button
-                  v-for="category in categories"
-                  :key="category"
-                  class="category-pill"
-                  :class="{ 'is-active': category === selectedCategory }"
-                  type="button"
-                  @click="selectCategory(category)"
-                >
-                  {{ category }}
-                </button>
-              </template>
-              <p v-else class="helper-text">لا توجد خدمات متاحة حالياً.</p>
+          </template>
+          <p v-else class="helper-text">لا توجد خدمات متاحة حالياً.</p>
+        </div>
+        <div class="services">
+          <div v-if="isLoadingServices" class="helper-text">جارِ تحميل الخدمات...</div>
+          <div v-else-if="serviceError" class="helper-text">{{ serviceError }}</div>
+          <div v-else-if="services.length === 0" class="empty-state">لا توجد خدمات ضمن هذا التصنيف حالياً.</div>
+          <article v-else v-for="service in services" :key="service.id" class="service-card">
+            <h3>{{ service.title }}</h3>
+            <p>{{ service.summary }}</p>
+            <div class="service-meta">
+              <span><span class="tag">{{ service.category }}</span></span>
+              <span>{{ service.isOnline ? 'متاحة إلكترونياً' : 'تحتاج لمراجعة' }}</span>
             </div>
-            <div class="services">
-              <div v-if="isLoadingServices" class="helper-text">جارِ تحميل الخدمات...</div>
-              <div v-else-if="serviceError" class="helper-text">{{ serviceError }}</div>
-              <div v-else-if="services.length === 0" class="empty-state">لا توجد خدمات ضمن هذا التصنيف حالياً.</div>
-              <article v-else v-for="service in services" :key="service.id" class="service-card">
-                <h3>{{ service.title }}</h3>
-                <p>{{ service.summary }}</p>
-                <div class="service-meta">
-                  <span><span class="tag">{{ service.category }}</span></span>
-                  <span>{{ service.isOnline ? 'متاحة إلكترونياً' : 'تحتاج لمراجعة' }}</span>
-                </div>
-                <button type="button" @click="openService(service.id)">عرض التفاصيل</button>
-              </article>
-            </div>
-          </section>
+            <button type="button" @click="openService(service.id)">عرض التفاصيل</button>
+          </article>
+        </div>
+      </section>
 
-          <section
-            v-show="activeView === 'casesSection'"
-            id="casesSection"
-            class="view-section"
-            aria-labelledby="casesTitle"
-          >
-            <header class="view-section__header">
-              <h2 id="casesTitle" class="section-title">إدارة الشكاوى والطلبات</h2>
-              <p class="section-hint">تابع تقدم المعاملات وقم بمشاركتنا التفاصيل المطلوبة في أي وقت.</p>
+      <section v-show="activeView === 'casesSection'" id="casesSection" class="view" aria-labelledby="casesTitle">
+        <h2 id="casesTitle" class="section-title">إدارة الشكاوى والطلبات</h2>
+        <div class="cases-grid">
+          <article class="card" id="complaintsCard">
+            <header>
+              <h3>خدمة الشكاوى</h3>
+              <p>قدم شكواك وتابع حالتها لحظة بلحظة.</p>
             </header>
-            <div class="cases-grid">
-              <article class="card" id="complaintsCard">
-                <header>
-                  <h3>خدمة الشكاوى</h3>
-                  <p>قدم شكواك وتابع حالتها لحظة بلحظة.</p>
-                </header>
-                <form class="case-form" @submit.prevent="submitComplaintForm">
-                  <label>
-                    <span>موضوع الشكوى</span>
-                    <input v-model="complaintForm.subject" type="text" required placeholder="اختيار عنوان واضح" />
-                  </label>
-                  <label>
-                    <span>وصف مفصل</span>
-                    <textarea v-model="complaintForm.description" required rows="3" placeholder="اشرح المشكلة بالتفصيل"></textarea>
-                  </label>
-                  <button type="submit" class="primary-btn">إرسال الشكوى</button>
-                </form>
-                <div class="list" aria-live="polite">
-                  <div v-if="!currentUser" class="empty-state">سجّل الدخول للاطلاع على شكاويك.</div>
-                  <div v-else-if="complaints.length === 0" class="empty-state">لم يتم تسجيل أي شكوى بعد.</div>
-                  <template v-else>
-                    <div v-for="complaint in complaints" :key="complaint.id" class="list-item">
-                      <h4>{{ complaint.subject }}</h4>
-                      <p class="helper-text">التاريخ: {{ complaint.createdAt }}</p>
-                      <span class="status-badge">{{ complaint.status }}</span>
-                      <details>
-                        <summary>تتبع</summary>
-                        <ul class="list">
-                          <li v-for="(update, index) in complaint.updates" :key="index">{{ update }}</li>
-                        </ul>
-                      </details>
-                    </div>
-                  </template>
-                </div>
-              </article>
-
-              <article class="card" id="requestsCard">
-                <header>
-                  <h3>خدمة الطلبات</h3>
-                  <p>أرسل طلبك للخدمات العامة وتابع مراحل الإنجاز.</p>
-                </header>
-                <form class="case-form" @submit.prevent="submitRequestForm">
-                  <label>
-                    <span>نوع الطلب</span>
-                    <input v-model="requestForm.type" type="text" required placeholder="مثال: تصريح بناء" />
-                  </label>
-                  <label>
-                    <span>تفاصيل</span>
-                    <textarea v-model="requestForm.details" required rows="3" placeholder="أدخل تفاصيل الطلب"></textarea>
-                  </label>
-                  <button type="submit" class="primary-btn">إرسال الطلب</button>
-                </form>
-                <div class="list" aria-live="polite">
-                  <div v-if="!currentUser" class="empty-state">سجّل الدخول للاطلاع على طلباتك.</div>
-                  <div v-else-if="requests.length === 0" class="empty-state">لا توجد طلبات مسجلة.</div>
-                  <template v-else>
-                    <div v-for="request in requests" :key="request.id" class="list-item">
-                      <h4>{{ request.type }}</h4>
-                      <p class="helper-text">التاريخ: {{ request.createdAt }}</p>
-                      <span class="status-badge">{{ request.status }}</span>
-                      <details>
-                        <summary>آخر التحديثات</summary>
-                        <ul class="list">
-                          <li v-for="(update, index) in request.updates" :key="index">{{ update }}</li>
-                        </ul>
-                      </details>
-                    </div>
-                  </template>
-                </div>
-              </article>
-            </div>
-          </section>
-
-          <section
-            v-show="activeView === 'violationsSection'"
-            id="violationsSection"
-            class="view-section"
-            aria-labelledby="violationsTitle"
-          >
-            <header class="view-section__header">
-              <h2 id="violationsTitle" class="section-title">مخالفاتي</h2>
-              <p class="section-hint">استعرض مخالفاتك المستحقة واختر ما ترغب بتسديده.</p>
-            </header>
-            <div class="list">
-              <div v-if="!currentUser" class="empty-state">سجّل الدخول لعرض مخالفاتك.</div>
-              <div v-else-if="violations.length === 0" class="empty-state">لا توجد مخالفات مسجلة على حسابك.</div>
+            <form class="case-form" @submit.prevent="submitComplaintForm">
+              <label>
+                <span>موضوع الشكوى</span>
+                <input v-model="complaintForm.subject" type="text" required placeholder="اختيار عنوان واضح" />
+              </label>
+              <label>
+                <span>وصف مفصل</span>
+                <textarea v-model="complaintForm.description" required rows="3" placeholder="اشرح المشكلة بالتفصيل"></textarea>
+              </label>
+              <button type="submit" class="primary-btn">إرسال الشكوى</button>
+            </form>
+            <div class="list" aria-live="polite">
+              <div v-if="!currentUser" class="empty-state">سجّل الدخول للاطلاع على شكاويك.</div>
+              <div v-else-if="complaints.length === 0" class="empty-state">لم يتم تسجيل أي شكوى بعد.</div>
               <template v-else>
-                <div v-for="violation in violations" :key="violation.id" class="list-item">
-                  <h4>{{ violation.title }}</h4>
-                  <p class="helper-text">تاريخ التحرير: {{ violation.issuedAt }}</p>
-                  <p class="helper-text">القيمة: {{ violation.amount.toLocaleString() }} ل.س</p>
-                  <span class="status-badge">{{ violation.status }}</span>
-                  <button class="inline-link" type="button">دفع إلكتروني قريباً</button>
+                <div v-for="complaint in complaints" :key="complaint.id" class="list-item">
+                  <h4>{{ complaint.subject }}</h4>
+                  <p class="helper-text">التاريخ: {{ complaint.createdAt }}</p>
+                  <span class="status-badge">{{ complaint.status }}</span>
+                  <details>
+                    <summary>تتبع</summary>
+                    <ul class="list">
+                      <li v-for="(update, index) in complaint.updates" :key="index">{{ update }}</li>
+                    </ul>
+                  </details>
                 </div>
               </template>
             </div>
-          </section>
-        </section>
+          </article>
 
-        <aside class="support-panel" aria-label="معلومات إضافية">
-          <div class="support-card">
-            <h3>نصائح للاستفادة القصوى</h3>
-            <ul class="tips-list">
-              <li v-for="tip in guidanceTips" :key="tip">{{ tip }}</li>
-            </ul>
-          </div>
-          <div class="support-card">
-            <h3>حالة الحساب</h3>
-            <p v-if="currentUser" class="support-card__status">
-              مرحباً {{ currentUser.name }}، يمكنك متابعة معاملتك من تبويب «حسابي».
-            </p>
-            <p v-else class="support-card__status">
-              لم تقم بتسجيل الدخول بعد. ابدأ الآن للاستفادة من جميع خدمات المنصة.
-            </p>
-            <button class="secondary-btn" type="button" @click="handleAuthTrigger">
-              إدارة الحساب
-            </button>
-          </div>
-        </aside>
-      </div>
+          <article class="card" id="requestsCard">
+            <header>
+              <h3>خدمة الطلبات</h3>
+              <p>أرسل طلبك للخدمات العامة وتابع مراحل الإنجاز.</p>
+            </header>
+            <form class="case-form" @submit.prevent="submitRequestForm">
+              <label>
+                <span>نوع الطلب</span>
+                <input v-model="requestForm.type" type="text" required placeholder="مثال: تصريح بناء" />
+              </label>
+              <label>
+                <span>تفاصيل</span>
+                <textarea v-model="requestForm.details" required rows="3" placeholder="أدخل تفاصيل الطلب"></textarea>
+              </label>
+              <button type="submit" class="primary-btn">إرسال الطلب</button>
+            </form>
+            <div class="list" aria-live="polite">
+              <div v-if="!currentUser" class="empty-state">سجّل الدخول للاطلاع على طلباتك.</div>
+              <div v-else-if="requests.length === 0" class="empty-state">لا توجد طلبات مسجلة.</div>
+              <template v-else>
+                <div v-for="request in requests" :key="request.id" class="list-item">
+                  <h4>{{ request.type }}</h4>
+                  <p class="helper-text">التاريخ: {{ request.createdAt }}</p>
+                  <span class="status-badge">{{ request.status }}</span>
+                  <details>
+                    <summary>آخر التحديثات</summary>
+                    <ul class="list">
+                      <li v-for="(update, index) in request.updates" :key="index">{{ update }}</li>
+                    </ul>
+                  </details>
+                </div>
+              </template>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section v-show="activeView === 'violationsSection'" id="violationsSection" class="view" aria-labelledby="violationsTitle">
+        <h2 id="violationsTitle" class="section-title">مخالفاتي</h2>
+        <p class="section-hint">استعرض مخالفاتك المستحقة واختر ما ترغب بتسديده.</p>
+        <div class="list">
+          <div v-if="!currentUser" class="empty-state">سجّل الدخول لعرض مخالفاتك.</div>
+          <div v-else-if="violations.length === 0" class="empty-state">لا توجد مخالفات مسجلة على حسابك.</div>
+          <template v-else>
+            <div v-for="violation in violations" :key="violation.id" class="list-item">
+              <h4>{{ violation.title }}</h4>
+              <p class="helper-text">تاريخ التحرير: {{ violation.issuedAt }}</p>
+              <p class="helper-text">القيمة: {{ violation.amount.toLocaleString() }} ل.س</p>
+              <span class="status-badge">{{ violation.status }}</span>
+              <button class="inline-link" type="button">دفع إلكتروني قريباً</button>
+            </div>
+          </template>
+        </div>
+      </section>
     </main>
 
     <footer class="app-footer">
@@ -396,16 +318,6 @@ const views = [
   { id: 'casesSection', label: 'الشكاوى والطلبات' },
   { id: 'violationsSection', label: 'المخالفات' },
 ];
-const supportChannels = [
-  { label: 'مركز النداء', value: '199' },
-  { label: 'الواتساب الموحد', value: '+963-955-123456' },
-  { label: 'البريد الإلكتروني', value: 'support@daraa.gov.sy' },
-];
-const guidanceTips = [
-  'تأكد من اكتمال بياناتك الشخصية قبل تقديم أي طلب.',
-  'تابع تحديثات الحالة من قسم «الشكاوى والطلبات».',
-  'يمكنك حفظ الخدمات المفضلة من خلال إضافة الطلب إلى حسابك.',
-];
 const activeView = ref('servicesSection');
 
 const currentUser = ref(null);
@@ -426,23 +338,6 @@ const requestForm = reactive({ type: '', details: '' });
 
 const authLabel = computed(() => (currentUser.value ? currentUser.value.name.split(' ')[0] : 'تسجيل الدخول'));
 const isProfileView = computed(() => !!currentUser.value && authMode.value === 'profile');
-const portalInsights = computed(() => {
-  const hasUser = !!currentUser.value;
-  const insightItems = [
-    { label: 'تصنيفات الخدمات', value: categories.value.length },
-    { label: 'الخدمات المتاحة', value: services.value.length },
-    { label: 'معاملاتك الجارية', value: hasUser ? complaints.value.length + requests.value.length : '—' },
-    { label: 'مخالفات نشطة', value: hasUser ? violations.value.length : '—' },
-  ];
-
-  return insightItems.map((item) => ({
-    ...item,
-    value:
-      typeof item.value === 'number'
-        ? item.value.toLocaleString('ar-EG')
-        : item.value,
-  }));
-});
 
 watch(
   () => [isServiceSheetOpen.value, isAuthSheetOpen.value],
