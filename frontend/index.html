@@ -18,15 +18,6 @@
         <h1 class="brand__title">منصة خدمة المواطن</h1>
       </div>
     </div>
-
-    <button class="nav-toggle" id="navToggle" aria-expanded="false" aria-controls="categoryNav" aria-label="فتح قائمة التصنيفات">
-      ☰
-    </button>
-
-    <nav class="site-nav" id="categoryNav" aria-label="التصنيفات الرئيسية">
-      <ul class="site-nav__list" id="categoryMenu"></ul>
-    </nav>
-
     <div class="user-actions">
       <button class="btn btn-outline" id="loginTrigger">تسجيل الدخول</button>
       <button class="btn" id="registerTrigger">إنشاء حساب</button>
@@ -51,11 +42,11 @@
 
     <section class="services" id="servicesSection">
       <div class="section-header">
-        <h3 id="servicesHeading">التصنيفات الرئيسية</h3>
-        <p class="section-subtitle" id="servicesSubtitle">اختر تصنيفاً من القائمة العلوية للاطلاع على الخدمات المرتبطة به.</p>
+        <h3>التصنيفات الرئيسية</h3>
+        <div class="filters" id="categoryFilters"></div>
       </div>
       <div class="services__layout">
-        <div class="services__list" id="servicesList" aria-live="polite"></div>
+        <div class="services__list" id="servicesList"></div>
         <aside class="service-details" id="serviceDetails">
           <div class="empty-state">
             <h4>اختر خدمة للاطلاع على تفاصيلها</h4>

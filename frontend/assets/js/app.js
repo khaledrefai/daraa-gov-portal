@@ -1,60 +1,14 @@
 const state = {
   currentUser: null,
-  selectedCategory: null,
+  selectedCategory: 'الكل',
   selectedService: null,
   otpPhone: null,
-  services: [],
-};
-
-const categoryDescriptions = {
-  'خدمات قنصلية': 'إجراءات تصديق وتنظيم الوثائق الرسمية الخاصة بالمواطنين والمقيمين.',
-  'خدمات سجل النفوس': 'خدمات الأحوال المدنية التي تضمن تحديث بيانات الأسرة والقيود المدنية.',
-  'خدمات مؤسسة المياه': 'طلبات اشتراك المياه، النقل، والمتابعة الفنية لشبكات التزويد.',
-  'خدمات المصالح العقارية': 'إصدار البيانات والسجلات العقارية ومتابعة معاملات الملكية.',
-  'خدمات مديرية التربية': 'خدمات الطلاب والمعلمين المتعلقة بالشهادات والمصادقات.',
-  'خدمات الشؤون الاجتماعية والعمل': 'برامج الدعم الاجتماعي وتمكين الأسر والفئات المستفيدة.',
-};
-
-const categoryMeta = {
-  'خدمات قنصلية': {
-    icon: '🛂',
-    caption: 'شؤون المواطنين خارج القطر',
-    gradient: ['#4EA69B', '#1F5E53'],
-  },
-  'خدمات سجل النفوس': {
-    icon: '🪪',
-    caption: 'القيود والبيانات المدنية',
-    gradient: ['#5CB0A2', '#2C6D62'],
-  },
-  'خدمات مؤسسة المياه': {
-    icon: '💧',
-    caption: 'إدارة الاشتراكات والشبكات',
-    gradient: ['#5EC4C2', '#1E686C'],
-  },
-  'خدمات المصالح العقارية': {
-    icon: '🏠',
-    caption: 'الملكية والرسوم العقارية',
-    gradient: ['#63B07C', '#1F5A3F'],
-  },
-  'خدمات مديرية التربية': {
-    icon: '🎓',
-    caption: 'الشهادات والامتحانات',
-    gradient: ['#7FCF87', '#2C7A4F'],
-  },
-  'خدمات الشؤون الاجتماعية والعمل': {
-    icon: '🤝',
-    caption: 'دعم وتمكين الفئات المحتاجة',
-    gradient: ['#A1DFA4', '#386B4A'],
-  },
 };
 
 const elements = {
   servicesList: document.getElementById('servicesList'),
   serviceDetails: document.getElementById('serviceDetails'),
-  categoryNav: document.getElementById('categoryNav'),
-  categoryMenu: document.getElementById('categoryMenu'),
-  servicesHeading: document.getElementById('servicesHeading'),
-  servicesSubtitle: document.getElementById('servicesSubtitle'),
+  categoryFilters: document.getElementById('categoryFilters'),
   heroStats: document.getElementById('heroStats'),
   complaintsPanel: document.getElementById('complaintsPanel'),
   requestsPanel: document.getElementById('requestsPanel'),
@@ -66,27 +20,6 @@ const elements = {
   registerForm: document.getElementById('registerForm'),
   otpForm: document.getElementById('otpForm'),
   userActions: document.querySelector('.user-actions'),
-  navToggle: document.getElementById('navToggle'),
-};
-
-const toggleNavigation = (force) => {
-  if (!elements.categoryNav || !elements.navToggle) return;
-  const isOpen = typeof force === 'boolean' ? force : !elements.categoryNav.classList.contains('open');
-  elements.categoryNav.classList.toggle('open', isOpen);
-  elements.navToggle.setAttribute('aria-expanded', String(isOpen));
-};
-
-const updateServicesIntro = () => {
-  if (!elements.servicesHeading || !elements.servicesSubtitle) return;
-  if (!state.selectedCategory) {
-    elements.servicesHeading.textContent = 'التصنيفات الرئيسية';
-    elements.servicesSubtitle.textContent = 'اختر تصنيفاً من القائمة العلوية للاطلاع على الخدمات المرتبطة به.';
-    return;
-  }
-
-  elements.servicesHeading.textContent = state.selectedCategory;
-  elements.servicesSubtitle.textContent =
-    categoryDescriptions[state.selectedCategory] || 'مجموعة من الخدمات المرتبطة بهذا التصنيف.';
 };
 
 const updateUserActions = () => {
@@ -169,63 +102,33 @@ const renderHeroStats = (services) => {
     .join('');
 };
 
-const renderNavigation = (services) => {
-  if (!elements.categoryMenu) return;
-  const categories = [...new Set(services.map((service) => service.category))];
-
-  if (!categories.length) {
-    elements.categoryMenu.innerHTML = '<li class="site-nav__item">لا توجد تصنيفات متاحة حالياً.</li>';
-    updateServicesIntro();
-    return;
-  }
-
-  if (!state.selectedCategory || !categories.includes(state.selectedCategory)) {
-    state.selectedCategory = categories[0];
-  }
-
-  const defaultMeta = { icon: '📁', caption: 'مجموعة خدمات متنوعة', gradient: ['#428177', '#054239'] };
-
-  elements.categoryMenu.innerHTML = categories
-    .map((category) => {
-      const meta = { ...defaultMeta, ...(categoryMeta[category] || {}) };
-      const [accentStart, accentEnd] = meta.gradient || defaultMeta.gradient;
-      const accentStyle = `style="--accent-start:${accentStart}; --accent-end:${accentEnd};"`;
-
-      return `
-        <li class="site-nav__item">
-          <button type="button" class="site-nav__button ${state.selectedCategory === category ? 'active' : ''}" data-category="${category}" ${accentStyle}>
-            <span class="site-nav__icon" aria-hidden="true">${meta.icon}</span>
-            <span class="site-nav__text">
-              <span class="site-nav__label">${category}</span>
-              ${meta.caption ? `<span class="site-nav__caption">${meta.caption}</span>` : ''}
-            </span>
-          </button>
-        </li>
-      `;
-    })
+const renderFilters = (services) => {
+  const categories = ['الكل', ...new Set(services.map((service) => service.category))];
+  elements.categoryFilters.innerHTML = categories
+    .map(
+      (category) => `
+      <button class="filter ${state.selectedCategory === category ? 'active' : ''}" data-category="${category}">
+        ${category}
+      </button>
+    `
+    )
     .join('');
-
-  updateServicesIntro();
 };
 
 const renderServices = (services) => {
-  if (!state.selectedCategory) {
-    elements.servicesList.innerHTML = '<p class="empty-state">اختر تصنيفاً من الأعلى لعرض الخدمات.</p>';
-    return;
-  }
-
-  const filtered = services.filter((service) => service.category === state.selectedCategory);
+  const filtered = state.selectedCategory === 'الكل'
+    ? services
+    : services.filter((service) => service.category === state.selectedCategory);
 
   elements.servicesList.innerHTML = filtered
     .map(
       (service) => `
       <article class="service-card ${state.selectedService === service.id ? 'active' : ''}" data-service-id="${service.id}">
         <h4>${service.title}</h4>
-        <p class="service-card__summary">${service.summary || service.description}</p>
+        <p>${service.description}</p>
         <div class="taglist">
-          ${(service.tags || []).map((tag) => `<span>${tag}</span>`).join('')}
+          ${service.tags.map((tag) => `<span>${tag}</span>`).join('')}
         </div>
-        <span class="service-card__action">استعراض التفاصيل الكاملة</span>
       </article>
     `
     )
@@ -662,22 +565,16 @@ const initServices = async () => {
     const services = await MockApi.getServices();
     state.services = services;
     renderHeroStats(services);
-    renderNavigation(services);
+    renderFilters(services);
     renderServices(services);
     renderServiceDetails(state.selectedService);
 
-    elements.navToggle?.addEventListener('click', () => toggleNavigation());
-
-    elements.categoryMenu?.addEventListener('click', (event) => {
-      const button = event.target.closest('[data-category]');
-      if (!button) return;
-      state.selectedCategory = button.dataset.category;
-      state.selectedService = null;
-      renderNavigation(state.services);
-      renderServices(state.services);
-      renderServiceDetails(null);
-      if (window.matchMedia('(max-width: 960px)').matches) {
-        toggleNavigation(false);
+    elements.categoryFilters.addEventListener('click', (event) => {
+      if (event.target.matches('.filter')) {
+        state.selectedCategory = event.target.dataset.category;
+        renderFilters(state.services);
+        renderServices(state.services);
+        renderServiceDetails(null);
       }
     });
 
@@ -697,10 +594,6 @@ const initServices = async () => {
 const initCTAButtons = () => {
   document.getElementById('exploreServices').addEventListener('click', () => {
     document.getElementById('servicesSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
-    if (state.services?.length) {
-      renderNavigation(state.services);
-      renderServices(state.services);
-    }
   });
 
   document.getElementById('contactSupport').addEventListener('click', () => {
