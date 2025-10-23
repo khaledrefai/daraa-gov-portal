@@ -18,22 +18,11 @@
         <h1 class="brand__title">منصة خدمة المواطن</h1>
       </div>
     </div>
-
-    <button class="nav-toggle" id="navToggle" aria-expanded="false" aria-controls="categoryNav" aria-label="فتح قائمة التصنيفات">
-      ☰
-    </button>
-
     <div class="user-actions">
       <button class="btn btn-outline" id="loginTrigger">تسجيل الدخول</button>
       <button class="btn" id="registerTrigger">إنشاء حساب</button>
     </div>
   </header>
-
-  <div class="category-bar" id="categoryBar">
-    <nav class="site-nav" id="categoryNav" aria-label="التصنيفات الرئيسية">
-      <ul class="site-nav__list" id="categoryMenu"></ul>
-    </nav>
-  </div>
 
   <main>
     <section class="hero">
@@ -53,11 +42,11 @@
 
     <section class="services" id="servicesSection">
       <div class="section-header">
-        <h3 id="servicesHeading">التصنيفات الرئيسية</h3>
-        <p class="section-subtitle" id="servicesSubtitle">اختر تصنيفاً من القائمة العلوية للاطلاع على الخدمات المرتبطة به.</p>
+        <h3>التصنيفات الرئيسية</h3>
+        <div class="filters" id="categoryFilters"></div>
       </div>
       <div class="services__layout">
-        <div class="services__list" id="servicesList" aria-live="polite"></div>
+        <div class="services__list" id="servicesList"></div>
         <aside class="service-details" id="serviceDetails">
           <div class="empty-state">
             <h4>اختر خدمة للاطلاع على تفاصيلها</h4>
@@ -188,57 +177,6 @@
   </div>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-
-  <div class="chatbot" id="chatbot">
-    <button
-      class="chatbot__trigger"
-      id="chatbotTrigger"
-      type="button"
-      aria-haspopup="dialog"
-      aria-controls="chatbotWindow"
-      aria-expanded="false"
-    >
-      <span class="chatbot__trigger-icon">
-        <img src="assets/images/employee-badge.svg" alt="" />
-      </span>
-      <span class="chatbot__trigger-text">الموظف الرقمي</span>
-    </button>
-
-    <section
-      class="chatbot__window"
-      id="chatbotWindow"
-      role="dialog"
-      aria-label="المساعد الذكي لخدمات محافظة درعا"
-      hidden
-    >
-      <header class="chatbot__header">
-        <div class="chatbot__agent">
-          <span class="chatbot__avatar">
-            <img src="assets/images/employee-badge.svg" alt="شعار موظف الخدمة" />
-          </span>
-          <div>
-            <p class="chatbot__agent-title">المساعد الذكي</p>
-            <p class="chatbot__agent-subtitle">موظف خدمة المواطن</p>
-          </div>
-        </div>
-        <button class="chatbot__close" id="chatbotClose" type="button" aria-label="إغلاق المحادثة">
-          &times;
-        </button>
-      </header>
-      <div class="chatbot__messages" id="chatMessages" aria-live="polite"></div>
-      <form class="chatbot__form" id="chatForm" novalidate>
-        <input
-          type="text"
-          id="chatInput"
-          name="message"
-          placeholder="اسأل عن خدمة أو كيفية التقديم"
-          autocomplete="off"
-          required
-        />
-        <button type="submit" class="btn">إرسال</button>
-      </form>
-    </section>
-  </div>
 
   <script src="assets/js/mockApi.js"></script>
   <script src="assets/js/app.js"></script>
