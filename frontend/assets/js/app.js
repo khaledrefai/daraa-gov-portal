@@ -1,65 +1,14 @@
 const state = {
   currentUser: null,
-  selectedCategory: null,
+  selectedCategory: 'الكل',
   selectedService: null,
   otpPhone: null,
-  services: [],
-  chat: {
-    isOpen: false,
-    initiated: false,
-    messages: [],
-  },
-};
-
-const categoryDescriptions = {
-  'خدمات قنصلية': 'إجراءات تصديق وتنظيم الوثائق الرسمية الخاصة بالمواطنين والمقيمين.',
-  'خدمات سجل النفوس': 'خدمات الأحوال المدنية التي تضمن تحديث بيانات الأسرة والقيود المدنية.',
-  'خدمات مؤسسة المياه': 'طلبات اشتراك المياه، النقل، والمتابعة الفنية لشبكات التزويد.',
-  'خدمات المصالح العقارية': 'إصدار البيانات والسجلات العقارية ومتابعة معاملات الملكية.',
-  'خدمات مديرية التربية': 'خدمات الطلاب والمعلمين المتعلقة بالشهادات والمصادقات.',
-  'خدمات الشؤون الاجتماعية والعمل': 'برامج الدعم الاجتماعي وتمكين الأسر والفئات المستفيدة.',
-};
-
-const categoryMeta = {
-  'خدمات قنصلية': {
-    icon: '🛂',
-    caption: 'شؤون المواطنين خارج القطر',
-    gradient: ['#4EA69B', '#1F5E53'],
-  },
-  'خدمات سجل النفوس': {
-    icon: '🪪',
-    caption: 'القيود والبيانات المدنية',
-    gradient: ['#5CB0A2', '#2C6D62'],
-  },
-  'خدمات مؤسسة المياه': {
-    icon: '💧',
-    caption: 'إدارة الاشتراكات والشبكات',
-    gradient: ['#5EC4C2', '#1E686C'],
-  },
-  'خدمات المصالح العقارية': {
-    icon: '🏠',
-    caption: 'الملكية والرسوم العقارية',
-    gradient: ['#63B07C', '#1F5A3F'],
-  },
-  'خدمات مديرية التربية': {
-    icon: '🎓',
-    caption: 'الشهادات والامتحانات',
-    gradient: ['#7FCF87', '#2C7A4F'],
-  },
-  'خدمات الشؤون الاجتماعية والعمل': {
-    icon: '🤝',
-    caption: 'دعم وتمكين الفئات المحتاجة',
-    gradient: ['#A1DFA4', '#386B4A'],
-  },
 };
 
 const elements = {
   servicesList: document.getElementById('servicesList'),
   serviceDetails: document.getElementById('serviceDetails'),
-  categoryNav: document.getElementById('categoryNav'),
-  categoryMenu: document.getElementById('categoryMenu'),
-  servicesHeading: document.getElementById('servicesHeading'),
-  servicesSubtitle: document.getElementById('servicesSubtitle'),
+  categoryFilters: document.getElementById('categoryFilters'),
   heroStats: document.getElementById('heroStats'),
   complaintsPanel: document.getElementById('complaintsPanel'),
   requestsPanel: document.getElementById('requestsPanel'),
@@ -71,266 +20,6 @@ const elements = {
   registerForm: document.getElementById('registerForm'),
   otpForm: document.getElementById('otpForm'),
   userActions: document.querySelector('.user-actions'),
-  navToggle: document.getElementById('navToggle'),
-  categoryBar: document.getElementById('categoryBar'),
-  chatbot: document.getElementById('chatbot'),
-  chatbotTrigger: document.getElementById('chatbotTrigger'),
-  chatbotWindow: document.getElementById('chatbotWindow'),
-  chatbotClose: document.getElementById('chatbotClose'),
-  chatMessages: document.getElementById('chatMessages'),
-  chatForm: document.getElementById('chatForm'),
-  chatInput: document.getElementById('chatInput'),
-};
-
-const normalizeText = (value = '') =>
-  value
-    .toString()
-    .trim()
-    .toLowerCase()
-    .replace(/[\u0610-\u061A\u064B-\u065F\u0670\u06D6-\u06ED]/g, '')
-    .replace(/[\u061f\u060c\u061b\.,!؟،؛]/g, '')
-    .replace(/[\s\u200f\u200e]+/g, ' ');
-
-const pushChatMessage = (sender, text) => {
-  state.chat.messages.push({
-    id: `${sender}-${Date.now()}-${Math.random().toString(16).slice(2)}`,
-    sender,
-    text,
-    time: new Date(),
-  });
-  renderChatMessages();
-};
-
-const renderChatMessages = () => {
-  if (!elements.chatMessages) return;
-
-  elements.chatMessages.innerHTML = state.chat.messages
-    .map((message) => {
-      const segments = [];
-      let listBuffer = [];
-
-      message.text
-        .split('\n')
-        .map((line) => line.trim())
-        .filter(Boolean)
-        .forEach((line) => {
-          if (line.startsWith('- ')) {
-            listBuffer.push(line.replace(/^-\s*/, ''));
-          } else {
-            if (listBuffer.length) {
-              segments.push(`<ul>${listBuffer.map((item) => `<li>${item}</li>`).join('')}</ul>`);
-              listBuffer = [];
-            }
-            segments.push(`<p>${line}</p>`);
-          }
-        });
-
-      if (listBuffer.length) {
-        segments.push(`<ul>${listBuffer.map((item) => `<li>${item}</li>`).join('')}</ul>`);
-      }
-
-      const bubble = `<div class="chatbot__bubble">${segments.join('')}</div>`;
-      return `<div class="chatbot__message chatbot__message--${message.sender}">${bubble}</div>`;
-    })
-    .join('');
-
-  elements.chatMessages.scrollTop = elements.chatMessages.scrollHeight;
-};
-
-const getServiceHighlights = () => {
-  if (!state.services.length) return '';
-  const highlights = state.services.slice(0, 3).map((service) => `- ${service.title}: ${service.summary}`);
-  return `يمكنني إرشادك حول الخدمات التالية على سبيل المثال:\n${highlights.join('\n')}`;
-};
-
-const ensureChatGreeting = () => {
-  if (state.chat.initiated) return;
-  const greetingLines = [
-    'مرحباً بك! أنا المساعد الرقمي لمحافظة درعا، أجيبك حول الخدمات الإلكترونية ومساراتها.',
-  ];
-  const highlights = getServiceHighlights();
-  if (highlights) {
-    greetingLines.push(highlights);
-  } else {
-    greetingLines.push('اسألني عن أي خدمة أو تصنيف وسيتم تزويدك بالتفاصيل المتاحة.');
-  }
-  pushChatMessage('bot', greetingLines.join('\n'));
-  state.chat.initiated = true;
-};
-
-const toggleChatbot = (open = !state.chat.isOpen) => {
-  if (!elements.chatbot || !elements.chatbotWindow || !elements.chatbotTrigger) return;
-  state.chat.isOpen = open;
-  elements.chatbot.classList.toggle('chatbot--open', open);
-  elements.chatbotWindow.hidden = !open;
-  elements.chatbotWindow.setAttribute('aria-hidden', open ? 'false' : 'true');
-  elements.chatbotTrigger.setAttribute('aria-expanded', String(open));
-
-  if (open) {
-    ensureChatGreeting();
-    elements.chatInput?.focus();
-  }
-};
-
-const formatServiceDetails = (service) => {
-  const lines = [
-    `خدمة ${service.title}`,
-    service.summary,
-  ];
-  if (service.online) {
-    lines.push('✅ متاحة للتقديم الإلكتروني عبر المنصة.');
-  } else {
-    lines.push('ℹ️ تتطلب مراجعة المركز المختص لإتمام الطلب.');
-  }
-  const workflowSteps = Array.isArray(service.workflow) ? service.workflow.slice(0, 3) : [];
-  if (workflowSteps.length) {
-    lines.push('مسار العمل الأساسي:');
-    workflowSteps.forEach((step, index) => {
-      lines.push(`- الخطوة ${index + 1}: ${step}`);
-    });
-  }
-  if (service.contact) {
-    lines.push('قنوات التواصل:');
-    const { phone, email, address } = service.contact;
-    if (phone) lines.push(`- هاتف: ${phone}`);
-    if (email) lines.push(`- بريد إلكتروني: ${email}`);
-    if (address) lines.push(`- العنوان: ${address}`);
-  }
-  lines.push('بإمكانك الضغط على زر "التقديم على الخدمة" من صفحة التفاصيل لإكمال الطلب.');
-  return lines.join('\n');
-};
-
-const createChatbotReply = (rawMessage) => {
-  const query = normalizeText(rawMessage);
-  const simplifiedQuery = query.replace(/^ال/, '').trim();
-
-  if (!query) {
-    return 'أرسل سؤالك حول خدمة أو تصنيف معين وسأزودك بالتفاصيل.';
-  }
-
-  if (/^مرحب|السلام|اهلا/.test(query)) {
-    return 'أهلاً بك! كيف يمكنني مساعدتك اليوم في خدمات محافظة درعا؟';
-  }
-
-  if (/تسجيل|دخول|حساب/.test(query)) {
-    return 'للدخول إلى الخدمات الإلكترونية، استخدم زر "تسجيل الدخول" في الترويسة. وإن لم يكن لديك حساب يمكنك إنشاء حساب جديد وستصلك كلمة مرور لمرة واحدة لتفعيل الحساب.';
-  }
-
-  if (/شكاو|شكوى/.test(query)) {
-    return 'يمكنك تقديم الشكوى من خلال بطاقة "خدمة الشكاوى" في الواجهة الرئيسية، كما تستطيع متابعة حالة الشكوى بعد تسجيل الدخول.';
-  }
-
-  const services = state.services || [];
-  if (!services.length) {
-    return 'أقوم حالياً بتحميل الخدمات من السجلات التجريبية، أعد إرسال سؤالك بعد لحظات.';
-  }
-
-  const serviceMatches = services.filter((service) => {
-    const content = [service.title, service.summary, service.category, service.description]
-      .map((field) => normalizeText(field))
-      .join(' ');
-    return content.includes(query);
-  });
-
-  if (serviceMatches.length === 1) {
-    return formatServiceDetails(serviceMatches[0]);
-  }
-
-  if (serviceMatches.length > 1) {
-    const lines = ['تم العثور على أكثر من خدمة مرتبطة بسؤالك:'];
-    serviceMatches.slice(0, 5).forEach((service) => {
-      lines.push(`- ${service.title}: ${service.summary}`);
-    });
-    lines.push('يمكنك تحديد اسم خدمة بعينها للحصول على تفاصيل أوسع.');
-    return lines.join('\n');
-  }
-
-  const categoryMatch = Object.keys(categoryDescriptions).find((category) => {
-    const normalizedCategory = normalizeText(category);
-    const simplifiedCategory = normalizedCategory.replace(/^خدمات\s+/, '');
-    return (
-      normalizedCategory.includes(query) ||
-      query.includes(normalizedCategory) ||
-      simplifiedCategory.includes(query) ||
-      query.includes(simplifiedCategory) ||
-      (simplifiedQuery && simplifiedCategory.includes(simplifiedQuery)) ||
-      (simplifiedQuery && simplifiedQuery.includes(simplifiedCategory))
-    );
-  });
-
-  if (categoryMatch) {
-    const related = services.filter((service) => service.category === categoryMatch);
-    if (related.length) {
-      const lines = [`ضمن ${categoryMatch} يتوفر لدينا:`];
-      related.forEach((service) => lines.push(`- ${service.title}: ${service.summary}`));
-      lines.push('أخبرني باسم الخدمة التي تريد تفاصيلها أو استخدم القائمة لفتح تفاصيلها الكاملة.');
-      return lines.join('\n');
-    }
-  }
-
-  return 'لم أجد خدمة مطابقة تماماً لسؤالك. جرّب ذكر اسم الخدمة أو التصنيف أو الاستفسار عن الشكاوى والطلبات، وسأقدم لك المعلومات المتاحة.';
-};
-
-const initChatbot = () => {
-  if (!elements.chatbot) return;
-
-  renderChatMessages();
-
-  elements.chatbotTrigger?.addEventListener('click', () => {
-    toggleChatbot(!state.chat.isOpen);
-  });
-
-  elements.chatbotClose?.addEventListener('click', () => {
-    toggleChatbot(false);
-  });
-
-  elements.chatForm?.addEventListener('submit', (event) => {
-    event.preventDefault();
-    const message = elements.chatInput?.value?.trim();
-    if (!message) return;
-
-    pushChatMessage('user', message);
-    elements.chatInput.value = '';
-
-    setTimeout(() => {
-      const reply = createChatbotReply(message);
-      pushChatMessage('bot', reply);
-    }, 320);
-  });
-
-  document.addEventListener('click', (event) => {
-    if (!state.chat.isOpen) return;
-    if (!elements.chatbot?.contains(event.target)) {
-      toggleChatbot(false);
-    }
-  });
-
-  document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape' && state.chat.isOpen) {
-      toggleChatbot(false);
-    }
-  });
-};
-
-const toggleNavigation = (force) => {
-  if (!elements.categoryNav || !elements.navToggle) return;
-  const isOpen = typeof force === 'boolean' ? force : !elements.categoryNav.classList.contains('open');
-  elements.categoryNav.classList.toggle('open', isOpen);
-  elements.navToggle.setAttribute('aria-expanded', String(isOpen));
-  elements.categoryBar?.classList.toggle('open', isOpen);
-};
-
-const updateServicesIntro = () => {
-  if (!elements.servicesHeading || !elements.servicesSubtitle) return;
-  if (!state.selectedCategory) {
-    elements.servicesHeading.textContent = 'التصنيفات الرئيسية';
-    elements.servicesSubtitle.textContent = 'اختر تصنيفاً من القائمة العلوية للاطلاع على الخدمات المرتبطة به.';
-    return;
-  }
-
-  elements.servicesHeading.textContent = state.selectedCategory;
-  elements.servicesSubtitle.textContent =
-    categoryDescriptions[state.selectedCategory] || 'مجموعة من الخدمات المرتبطة بهذا التصنيف.';
 };
 
 const updateUserActions = () => {
@@ -413,63 +102,33 @@ const renderHeroStats = (services) => {
     .join('');
 };
 
-const renderNavigation = (services) => {
-  if (!elements.categoryMenu) return;
-  const categories = [...new Set(services.map((service) => service.category))];
-
-  if (!categories.length) {
-    elements.categoryMenu.innerHTML = '<li class="site-nav__item">لا توجد تصنيفات متاحة حالياً.</li>';
-    updateServicesIntro();
-    return;
-  }
-
-  if (!state.selectedCategory || !categories.includes(state.selectedCategory)) {
-    state.selectedCategory = categories[0];
-  }
-
-  const defaultMeta = { icon: '📁', caption: 'مجموعة خدمات متنوعة', gradient: ['#428177', '#054239'] };
-
-  elements.categoryMenu.innerHTML = categories
-    .map((category) => {
-      const meta = { ...defaultMeta, ...(categoryMeta[category] || {}) };
-      const [accentStart, accentEnd] = meta.gradient || defaultMeta.gradient;
-      const accentStyle = `style="--accent-start:${accentStart}; --accent-end:${accentEnd};"`;
-
-      return `
-        <li class="site-nav__item">
-          <button type="button" class="site-nav__button ${state.selectedCategory === category ? 'active' : ''}" data-category="${category}" ${accentStyle}>
-            <span class="site-nav__icon" aria-hidden="true">${meta.icon}</span>
-            <span class="site-nav__text">
-              <span class="site-nav__label">${category}</span>
-              ${meta.caption ? `<span class="site-nav__caption">${meta.caption}</span>` : ''}
-            </span>
-          </button>
-        </li>
-      `;
-    })
+const renderFilters = (services) => {
+  const categories = ['الكل', ...new Set(services.map((service) => service.category))];
+  elements.categoryFilters.innerHTML = categories
+    .map(
+      (category) => `
+      <button class="filter ${state.selectedCategory === category ? 'active' : ''}" data-category="${category}">
+        ${category}
+      </button>
+    `
+    )
     .join('');
-
-  updateServicesIntro();
 };
 
 const renderServices = (services) => {
-  if (!state.selectedCategory) {
-    elements.servicesList.innerHTML = '<p class="empty-state">اختر تصنيفاً من الأعلى لعرض الخدمات.</p>';
-    return;
-  }
-
-  const filtered = services.filter((service) => service.category === state.selectedCategory);
+  const filtered = state.selectedCategory === 'الكل'
+    ? services
+    : services.filter((service) => service.category === state.selectedCategory);
 
   elements.servicesList.innerHTML = filtered
     .map(
       (service) => `
       <article class="service-card ${state.selectedService === service.id ? 'active' : ''}" data-service-id="${service.id}">
         <h4>${service.title}</h4>
-        <p class="service-card__summary">${service.summary || service.description}</p>
+        <p>${service.description}</p>
         <div class="taglist">
-          ${(service.tags || []).map((tag) => `<span>${tag}</span>`).join('')}
+          ${service.tags.map((tag) => `<span>${tag}</span>`).join('')}
         </div>
-        <span class="service-card__action">استعراض التفاصيل الكاملة</span>
       </article>
     `
     )
@@ -906,22 +565,16 @@ const initServices = async () => {
     const services = await MockApi.getServices();
     state.services = services;
     renderHeroStats(services);
-    renderNavigation(services);
+    renderFilters(services);
     renderServices(services);
     renderServiceDetails(state.selectedService);
 
-    elements.navToggle?.addEventListener('click', () => toggleNavigation());
-
-    elements.categoryMenu?.addEventListener('click', (event) => {
-      const button = event.target.closest('[data-category]');
-      if (!button) return;
-      state.selectedCategory = button.dataset.category;
-      state.selectedService = null;
-      renderNavigation(state.services);
-      renderServices(state.services);
-      renderServiceDetails(null);
-      if (window.matchMedia('(max-width: 960px)').matches) {
-        toggleNavigation(false);
+    elements.categoryFilters.addEventListener('click', (event) => {
+      if (event.target.matches('.filter')) {
+        state.selectedCategory = event.target.dataset.category;
+        renderFilters(state.services);
+        renderServices(state.services);
+        renderServiceDetails(null);
       }
     });
 
@@ -941,10 +594,6 @@ const initServices = async () => {
 const initCTAButtons = () => {
   document.getElementById('exploreServices').addEventListener('click', () => {
     document.getElementById('servicesSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
-    if (state.services?.length) {
-      renderNavigation(state.services);
-      renderServices(state.services);
-    }
   });
 
   document.getElementById('contactSupport').addEventListener('click', () => {
@@ -958,7 +607,6 @@ const init = async () => {
   initNavigationCards();
   initCTAButtons();
   await initServices();
-  initChatbot();
   await initPanels();
 };
 
